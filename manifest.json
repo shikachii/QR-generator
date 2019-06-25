@@ -3,8 +3,14 @@
 	"version" : "0.0.1",
 	"manifest_version" : 2,
 	"description" : "見ているページのURLや右クリックしたURLをQRコードに変換して表示します。",
-	"permissions" : ["contextMenus"],
 	"background" : {
-		"scripts" : ["background.js"]
-	}
+		"scripts": ["background.js"]
+	},
+	"content_scripts" : [
+		{
+			"matches" : ["*://*/*"],
+			"js" : ["content.js"]
+		}
+	],
+	"permissions" : ["contextMenus"]
 }
