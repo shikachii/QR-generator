@@ -77,6 +77,28 @@ const verarr = [[ 17,  14,  11,   7], // 1
 								[858, 666, 482, 382], // 20
 								[929, 711, 509, 403]] // 21
 
+const alignarr = [[], // 1
+									[6, 18], // 2
+									[6, 22], // 3
+									[6, 26], // 4
+									[6, 30], // 5
+									[6, 34], // 6
+									[6, 22, 38], // 7
+									[6, 24, 42], // 8
+									[6, 26, 46], // 9
+									[6, 28, 50], // 10
+									[6, 30, 54], // 11
+									[6, 32, 58], // 12
+									[6, 34, 62], // 13
+									[6, 26, 46, 66], // 14
+									[6, 26, 48, 70], // 15
+									[6, 26, 50, 74], // 16
+									[6, 30, 54, 78], // 17
+									[6, 30, 56, 82], // 18
+									[6, 30, 58, 86], // 19
+									[6, 34, 62, 90], // 20
+									[6, 28, 50, 72, 94]] // 21
+
 class QR {
 	constructor(data, level){
 		this.version = 1
@@ -136,6 +158,28 @@ class QR {
 		// this.putPattern(8, this.size-finder, 1)
 	}
 
+	putAlignmentPattern(){
+		const v = this.version-1
+		console.log(alignarr[v].length)
+		for(let i = 0; i < alignarr[v].length; ++i){
+			for(let j = 0; j < alignarr[v].length; ++j){
+				if(i == 0 && j == 0) continue;
+				else if(i == 0 && j == alignarr[v].length-1) continue;
+				else if(i == alignarr[v].length-1 && j == 0) continue;
+
+				// 6, 18
+				const offx = alignarr[v][i]-2; // 6, 6, 18, 18
+				const offy = alignarr[v][j]-2; // 6, 18, 6, 18
+				console.log(alignarr[v][i] + " " + alignarr[v][j])
+				for(let x = 0; x < AlignmentPattern.length; ++x){
+					for(let y = 0; y < AlignmentPattern.length; ++y){
+						this.putPattern(x+offx, y+offy, AlignmentPattern[x][y])
+					}
+				}
+
+			}
+		}
+	}
 
 	printPattern(){
 		for(let i = 0; i < this.size; ++i){
@@ -146,7 +190,9 @@ class QR {
 }
 
 chrome.extension.onRequest.addListener(() => {
-	const qr = new QR("1234567890abcdefghijklmnopqrstuvwxyz", "M")
+	const qr = new QR(
+			"1234567890abcdefghijklmnopqrstuvwxyz"
+			, "M")
 	const url = window.location.href
 	
 	let dom = document.createElement("canvas")
@@ -160,6 +206,7 @@ chrome.extension.onRequest.addListener(() => {
 	qr.putFinderPattern(space+FinderPattern.length, 0)
 	qr.putFinderPattern(0, space+FinderPattern.length)
 	qr.putTimingPattern()
+	qr.putAlignmentPattern()
 	// qr.printPattern()
 
 	reflectPattern(qr, ctx)
