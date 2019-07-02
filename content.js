@@ -133,7 +133,7 @@ class QR {
 			this.putPattern(i, 6, p)
 			this.putPattern(6, i, p)
 		}
-		this.putPattern(8, this.size-finder, 1)
+		// this.putPattern(8, this.size-finder, 1)
 	}
 
 
