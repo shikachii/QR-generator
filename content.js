@@ -196,10 +196,12 @@ chrome.extension.onRequest.addListener(() => {
 	const url = window.location.href
 	
 	let dom = document.createElement("canvas")
-	dom.setAttribute("width",  "800")
-	dom.setAttribute("height", "800")
+	dom.setAttribute("width",   WIDTH*qr.size.toString())
+	dom.setAttribute("height", HEIGHT*qr.size.toString())
 	let ctx = dom.getContext("2d")
 
+	let div = document.createElement("div")
+	div.innerHTML = qr.data
 
 	const space = qr.size - 7*2
 	qr.putFinderPattern(0, 0)
@@ -218,4 +220,5 @@ chrome.extension.onRequest.addListener(() => {
 	*/
 
 	document.body.appendChild(dom)
+	document.body.appendChild(div)
 })
