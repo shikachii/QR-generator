@@ -18,6 +18,7 @@ const AlignmentPattern = [
 
 const WIDTH = 5, HEIGHT = 5
 
+/*
 function printPattern(array, ctx, x, y){
 	for(let i = 0; i < array.length; ++i){
 		for(let j = 0; j < array[i].length; ++j){
@@ -39,6 +40,7 @@ function printTiming(length, ctx){
 		ctx.fillRect(i*WIDTH, 6*HEIGHT, WIDTH, HEIGHT)
 	}
 }
+*/
 
 function putPattern(p, ctx, x, y){
 	if(p === 1){ ctx.fillStyle = "rgb(0, 0, 0)" }
@@ -190,18 +192,20 @@ class QR {
 }
 
 chrome.extension.onRequest.addListener(() => {
-	const qr = new QR(
-			"1234567890abcdefghijklmnopqrstuvwxyz"
-			, "M")
 	const url = window.location.href
+	const qr = new QR(
+			url
+			//"1234567890abcdefghijklmnopqrstuvwxyz"
+			, "M")
 	
-	let dom = document.createElement("canvas")
-	dom.setAttribute("width",   WIDTH*qr.size.toString())
-	dom.setAttribute("height", HEIGHT*qr.size.toString())
-	let ctx = dom.getContext("2d")
+	let canvas = document.createElement("canvas")
+	canvas.setAttribute("width",   WIDTH*qr.size.toString())
+	canvas.setAttribute("height", HEIGHT*qr.size.toString())
+	let ctx = canvas.getContext("2d")
 
-	let div = document.createElement("div")
-	div.innerHTML = qr.data
+	let urldiv = document.createElement("div")
+	urldiv.setAttribute("class", "url")
+	urldiv.innerHTML = qr.data
 
 	const space = qr.size - 7*2
 	qr.putFinderPattern(0, 0)
@@ -219,6 +223,10 @@ chrome.extension.onRequest.addListener(() => {
 	printPattern(FinderPattern, ctx, 0, 14*HEIGHT)
 	*/
 
-	document.body.appendChild(dom)
-	document.body.appendChild(div)
+	let parentdiv = document.createElement("div")
+	parentdiv.setAttribute("class", "qr")
+	document.body.appendChild(parentdiv)
+
+	parentdiv.appendChild(canvas)
+	parentdiv.appendChild(urldiv)
 })
