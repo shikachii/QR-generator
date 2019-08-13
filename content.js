@@ -107,6 +107,7 @@ class QR {
 		this.length = data.length
 		this.data = data
 		this.qr = []
+		this.datacode = []
 
 		switch(level){
 			case "L" : this.level = 0
@@ -188,13 +189,51 @@ class QR {
 			console.log(this.qr[i])
 		}
 	}
+
+	createDatacode(){
+		let originDatacode = []
+		// モード指定示(8ビットモードで0100)
+		originDatacode.push(4);
+
+		// 文字数指定示
+		if(1 <= this.version && this.version <= 9){
+			originDatacode.push(this.length)
+		}else{
+			// バージョン9以上なら16ビットの数値(8ビットずつにして格納)
+			originDatacode.push(this.length >> 8)
+			originDatacode.push(this.length & 255)
+		}
+		
+		// データコード
+		for(let i = 0; i < this.length; ++i){
+			originDatacode.push(this.data.charCodeAt(i))
+		}
+
+		console.log(originDatacode)
+
+		let num = 0
+		for(let i = 0; i < originDatacode.length; ++i){
+			// 4回左シフト
+			if(i != 0) {
+				num += (originDatacode[i] >> 4)
+				this.datacode.push(num)
+				num = 0
+			}
+			num += ((originDatacode[i] & 15) << 4)
+		}
+		if(num != 0) this.datacode.push(num)
+
+		console.log(this.datacode)
+
+	}
 		
 }
 
 chrome.extension.onRequest.addListener(() => {
 	const url = window.location.href
 	const qr = new QR(
-			url
+			"abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
+			//url
 			//"1234567890abcdefghijklmnopqrstuvwxyz"
 			, "M")
 	
@@ -207,6 +246,7 @@ chrome.extension.onRequest.addListener(() => {
 	urldiv.setAttribute("class", "url")
 	urldiv.innerHTML = qr.data
 
+	// QRコードの生成に関する処理はコンストラクタ内で行うようにする
 	const space = qr.size - 7*2
 	qr.putFinderPattern(0, 0)
 	qr.putFinderPattern(space+FinderPattern.length, 0)
@@ -214,6 +254,8 @@ chrome.extension.onRequest.addListener(() => {
 	qr.putTimingPattern()
 	qr.putAlignmentPattern()
 	// qr.printPattern()
+	
+	qr.createDatacode()
 
 	reflectPattern(qr, ctx)
 	/*
