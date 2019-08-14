@@ -101,6 +101,14 @@ const alignarr = [[], // 1
 									[6, 34, 62, 90], // 20
 									[6, 28, 50, 72, 94]] // 21
 
+// データコード語数(モード指定示+データ語数+データ本体+埋め草)
+// とりあえずバージョン21まで対応, レベルMのみ
+const datacodeSumArr = [
+	16, 28, 44, 64, 86, 108, 124, 154, 182,
+	216, 254, 290, 334, 365, 415, 453, 507,
+	563, 627, 669, 714
+]
+
 class QR {
 	constructor(data, level){
 		this.version = 1
@@ -223,6 +231,12 @@ class QR {
 		}
 		if(num != 0) this.datacode.push(num)
 
+		let tmp = 0
+		while(this.datacode.length < datacodeSumArr[this.version]){
+			if(tmp % 2 === 0) this.datacode.push(236)
+			else this.datacode.push(17)
+			tmp++
+		}
 		console.log(this.datacode)
 
 	}
