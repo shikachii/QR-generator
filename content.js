@@ -1,11 +1,13 @@
 const FinderPattern = [
-	[1, 1, 1, 1, 1, 1, 1],
-	[1, 0, 0, 0, 0, 0, 1],
-	[1, 0, 1, 1, 1, 0, 1],
-	[1, 0, 1, 1, 1, 0, 1],
-	[1, 0, 1, 1, 1, 0, 1],
-	[1, 0, 0, 0, 0, 0, 1],
-	[1, 1, 1, 1, 1, 1, 1],
+	[0, 0, 0, 0, 0, 0, 0, 0, 0],
+	[0, 1, 1, 1, 1, 1, 1, 1, 0],
+	[0, 1, 0, 0, 0, 0, 0, 1, 0],
+	[0, 1, 0, 1, 1, 1, 0, 1, 0],
+	[0, 1, 0, 1, 1, 1, 0, 1, 0],
+	[0, 1, 0, 1, 1, 1, 0, 1, 0],
+	[0, 1, 0, 0, 0, 0, 0, 1, 0],
+	[0, 1, 1, 1, 1, 1, 1, 1, 0],
+	[0, 0, 0, 0, 0, 0, 0, 0, 0]
 ]
 
 const AlignmentPattern = [
@@ -44,6 +46,7 @@ function printTiming(length, ctx){
 
 function putPattern(p, ctx, x, y){
 	if(p === 1){ ctx.fillStyle = "rgb(0, 0, 0)" }
+	else if(p === 2) { ctx.fillStyle = "rgb(100, 100, 100)" }
 	else { ctx.fillStyle = "rgb(255, 255, 255)" }
 	ctx.fillRect(x*WIDTH, y*HEIGHT, WIDTH, HEIGHT)
 }
@@ -52,7 +55,8 @@ function reflectPattern(code, ctx){
 	const arr = code.qr
 	for(let i = 0; i < code.size; ++i){
 		for(let j = 0; j < code.size; ++j){
-			putPattern(arr[i][j], ctx, i, j)
+			if(code.reserved[i][j] === false) putPattern(2, ctx, i, j)
+			else putPattern(arr[i][j], ctx, i, j)
 		}
 	}
 }
@@ -116,6 +120,7 @@ class QR {
 		this.data = data
 		this.qr = []
 		this.datacode = []
+		this.reserved = []
 
 		switch(level){
 			case "L" : this.level = 0
@@ -140,14 +145,22 @@ class QR {
 
 		this.size = 21 + (this.version-1) * 4
 
+		// QRコード領域と予約領域を確保
 		this.qr = new Array(this.size)
-		for(let i = 0; i < this.size; ++i)
+		this.reserved = new Array(this.size)
+
+		for(let i = 0; i < this.size; ++i){
 			this.qr[i] = new Array(this.size).fill(0)
+			this.reserved[i] = new Array(this.size).fill(false)
+		}
 	}
 
 	putPattern(x, y, p){
 		if(0 <= x && x < this.size && 0 <= y && y < this.size){
-			this.qr[x][y] = p;
+			if(this.reserved[x][y] != true){
+				this.qr[x][y] = p;
+				this.reserved[x][y] = true
+			}
 		}
 	}
 
@@ -261,10 +274,10 @@ chrome.extension.onRequest.addListener(() => {
 	urldiv.innerHTML = qr.data
 
 	// QRコードの生成に関する処理はコンストラクタ内で行うようにする
-	const space = qr.size - 7*2
-	qr.putFinderPattern(0, 0)
-	qr.putFinderPattern(space+FinderPattern.length, 0)
-	qr.putFinderPattern(0, space+FinderPattern.length)
+	const space = qr.size - (FinderPattern.length-1)*2
+	qr.putFinderPattern(0-1, 0-1)
+	qr.putFinderPattern(space+FinderPattern.length-1, 0-1)
+	qr.putFinderPattern(0-1, space+FinderPattern.length-1)
 	qr.putTimingPattern()
 	qr.putAlignmentPattern()
 	// qr.printPattern()
