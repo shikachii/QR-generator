@@ -29,6 +29,7 @@ class QR {
 			// console.log(this.length + " " + verarr[i][this.level])
 		}
 
+		// QRコードの縦横のピクセル数
 		this.size = 21 + (this.version-1) * 4
 
 		// QRコード領域と予約領域を確保
@@ -39,6 +40,9 @@ class QR {
 			this.qr[i] = new Array(this.size).fill(0)
 			this.reserved[i] = new Array(this.size).fill(false)
 		}
+
+		// QRコードの生成
+		this.generate()
 	}
 
 	putPattern(x, y, p){
@@ -138,6 +142,30 @@ class QR {
 		}
 		console.log(this.datacode)
 
+	}
+
+	// 呼ぶだけでQRコードを生成する
+	generate(){
+			// 位置検出パターンの配置
+			const SPACE = this.size - (FinderPattern.length-1)*2
+			this.putFinderPattern(0-1, 0-1)
+			this.putFinderPattern(SPACE+FinderPattern.length-1, 0-1)
+			this.putFinderPattern(0-1, SPACE+FinderPattern.length-1)
+
+			// タイミングパターンの配置
+			this.putTimingPattern()
+
+			// 位置合わせパターンの配置
+			this.putAlignmentPattern()
+
+			// データ語の生成
+			this.createDatacode()
+
+			// 誤り訂正コードの生成
+
+			// 形式情報の配置
+			
+			// データ語と誤り訂正コードの配置
 	}
 		
 }

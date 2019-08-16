@@ -34,17 +34,6 @@ chrome.extension.onRequest.addListener(() => {
 	urldiv.setAttribute("class", "url")
 	urldiv.innerHTML = qr.data
 
-	// QRコードの生成に関する処理はコンストラクタ内で行うようにする
-	const space = qr.size - (FinderPattern.length-1)*2
-	qr.putFinderPattern(0-1, 0-1)
-	qr.putFinderPattern(space+FinderPattern.length-1, 0-1)
-	qr.putFinderPattern(0-1, space+FinderPattern.length-1)
-	qr.putTimingPattern()
-	qr.putAlignmentPattern()
-	// qr.printPattern()
-	
-	qr.createDatacode()
-
 	reflectPattern(qr, ctx)
 
 	let parentdiv = document.createElement("div")
