@@ -144,6 +144,11 @@ class QR {
 
 	}
 
+	createErrorCorrectionCode(){
+		let errorCorrectionCode = []
+		errorCorrectionCode = generatorPolynomial.get(2)
+	}
+
 	// 呼ぶだけでQRコードを生成する
 	generate(){
 			// 位置検出パターンの配置
@@ -162,6 +167,7 @@ class QR {
 			this.createDatacode()
 
 			// 誤り訂正コードの生成
+			this.createErrorCorrectionCode()
 
 			// 形式情報の配置
 			
