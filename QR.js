@@ -146,13 +146,19 @@ class QR {
 	}
 
 	createErrorCorrectionCode(){
-		let g = generatorPolynomial.get(2)
+		let g = generatorPolynomial.get(18)
 
 		let p = new Polynomial()
-		this.errorCorrectionCode = p.mod(this.datacode, g)
+		let arr = [67, 70, 22, 38, 54, 70, 86, 102, 118, 134, 150, 166, 182, 198, 214]
+		//console.log(alphaToNum[43+37])
+		console.log(numToAlpha.length)
+		this.errorCorrectionCode = p.mod(arr, g)
 
-		console.log(alphaToNum.length)
-		console.log(alphaToNum[82])
+
+		console.log(this.errorCorrectionCode)
+
+		// console.log(alphaToNum.length)
+		// console.log(alphaToNum[82])
 	}
 
 	// 呼ぶだけでQRコードを生成する
