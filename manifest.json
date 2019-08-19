@@ -9,7 +9,7 @@
 	"content_scripts" : [
 		{
 			"matches" : ["*://*/*"],
-			"js" : ["content.js", "pattern.js", "qrinfo.js", "QR.js"]
+			"js" : ["content.js", "pattern.js", "qrinfo.js", "QR.js", "Polynomial.js"]
 		}
 	],
 	"permissions" : ["contextMenus"]

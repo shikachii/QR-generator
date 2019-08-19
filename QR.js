@@ -7,6 +7,7 @@ class QR {
 		this.qr = []
 		this.datacode = []
 		this.reserved = []
+		this.errorCorrectionCode = []
 
 		switch(level){
 			case "L" : this.level = 0
@@ -145,8 +146,13 @@ class QR {
 	}
 
 	createErrorCorrectionCode(){
-		let errorCorrectionCode = []
-		errorCorrectionCode = generatorPolynomial.get(2)
+		let g = generatorPolynomial.get(2)
+
+		let p = new Polynomial()
+		this.errorCorrectionCode = p.mod(this.datacode, g)
+
+		console.log(alphaToNum.length)
+		console.log(alphaToNum[82])
 	}
 
 	// 呼ぶだけでQRコードを生成する
