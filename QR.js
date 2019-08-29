@@ -143,6 +143,8 @@ class QR {
 		}
 		console.log(this.datacode)
 
+		// データコード分割
+
 	}
 
 	createErrorCorrectionCode(){
@@ -152,7 +154,7 @@ class QR {
 		let arr = [67, 70, 22, 38, 54, 70, 86, 102, 118, 134, 150, 166, 182, 198, 214]
 		//console.log(alphaToNum[43+37])
 		console.log(numToAlpha.length)
-		this.errorCorrectionCode = p.mod(arr, g)
+		this.errorCorrectionCode.push(p.mod(arr, g))
 
 
 		console.log(this.errorCorrectionCode)
