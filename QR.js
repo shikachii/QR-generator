@@ -149,6 +149,7 @@ class QR {
 		console.log(this.datacode)
 
 		// データコード分割
+		/*
 		const ecc = errorCorrectionCharacteristic[this.version][this.level]
 		let newdatacode = []
 		let base = 0
@@ -159,14 +160,30 @@ class QR {
 				base += ec[2]
 			}
 		}
-		console.log(newdatacode)
-		
-
-
+		this.datacode = newdatacode
+		console.log(this.datacode)
+		*/
 	}
 
 	// 誤り訂正コードの生成
 	createErrorCorrectionCode(){
+		const ecc = errorCorrectionCharacteristic[this.version][2]
+		let newdatacode = []
+		let base = 0
+		for(let ec of ecc){
+			for(let i = 0; i < ec[0]; ++i){
+				let p = new Polynomial()
+				let f = this.datacode.slice(base, base+ec[2])
+				newdatacode.push(f)
+				let g = generatorPolynomial.get(ec[1]-ec[2])
+
+				const r = p.mod(f, g)
+				console.log(r)
+
+				base += ec[2]
+			}
+		}
+		/*
 		let g = generatorPolynomial.get(18)
 
 		let p = new Polynomial()
@@ -180,6 +197,7 @@ class QR {
 
 		// console.log(alphaToNum.length)
 		// console.log(alphaToNum[82])
+		*/
 	}
 
 	// 呼ぶだけでQRコードを生成する
