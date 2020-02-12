@@ -25,21 +25,26 @@ chrome.extension.onRequest.addListener(() => {
 			//"1234567890abcdefghijklmnopqrstuvwxyz"
 			, "M")
 	
+	// 描画用canvasの初期化
 	let canvas = document.createElement("canvas")
 	canvas.setAttribute("width",   WIDTH*qr.size.toString())
 	canvas.setAttribute("height", HEIGHT*qr.size.toString())
 	let ctx = canvas.getContext("2d")
 
+	// URLを描画するdiv要素(デバッグ用)
 	let urldiv = document.createElement("div")
 	urldiv.setAttribute("class", "url")
 	urldiv.innerHTML = qr.data
 
+	// 生成されたQRコードをcontextに反映する
 	reflectPattern(qr, ctx)
 
+	// 描画するdiv要素の生成
 	let parentdiv = document.createElement("div")
 	parentdiv.setAttribute("class", "qr")
 	document.body.appendChild(parentdiv)
 
+	// parentdivの子としてDOMを追加
 	parentdiv.appendChild(canvas)
 	parentdiv.appendChild(urldiv)
 })

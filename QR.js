@@ -1,4 +1,7 @@
 
+/*
+ * class : QR
+ */
 class QR {
 	constructor(data, level){
 		this.version = 1
@@ -9,6 +12,7 @@ class QR {
 		this.reserved = []
 		this.errorCorrectionCode = []
 
+		// QRコードのレベルを設定
 		switch(level){
 			case "L" : this.level = 0
 								 break
@@ -102,6 +106,7 @@ class QR {
 		}
 	}
 
+	// データコードの生成
 	createDatacode(){
 		let originDatacode = []
 		// モード指定示(8ビットモードで0100)
@@ -144,9 +149,23 @@ class QR {
 		console.log(this.datacode)
 
 		// データコード分割
+		const ecc = errorCorrectionCharacteristic[this.version][this.level]
+		let newdatacode = []
+		let base = 0
+		// 誤り訂正特性からデータコードの分割数を取得
+		for(let ec of ecc){
+			for(let i = 0; i < ec[0]; ++i){
+				newdatacode.push(this.datacode.slice(base, base+ec[2]))
+				base += ec[2]
+			}
+		}
+		console.log(newdatacode)
+		
+
 
 	}
 
+	// 誤り訂正コードの生成
 	createErrorCorrectionCode(){
 		let g = generatorPolynomial.get(18)
 
