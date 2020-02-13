@@ -320,7 +320,8 @@ class QR {
 			// 形式情報の配置
 			this.putFormatInfo()
 
-			if(this.version >= 0){
+			// 型番情報はバージョン7以降のみに配置
+			if(this.version >= 7){
 				// 型番情報の生成
 				this.createModelNumber()
 
