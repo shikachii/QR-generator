@@ -11,6 +11,7 @@ class QR {
 		this.datacode = []
 		this.reserved = []
 		this.errorCorrectionCode = []
+		this.formatInfo = []
 
 		// QRコードのレベルを設定
 		switch(level){
@@ -178,11 +179,12 @@ class QR {
 				let g = generatorPolynomial.get(ec[1]-ec[2])
 
 				const r = p.mod(f, g)
-				console.log(r)
+				this.errorCorrectionCode.push(r)
 
 				base += ec[2]
 			}
 		}
+		console.log(this.errorCorrectionCode)
 		/*
 		let g = generatorPolynomial.get(18)
 
@@ -198,6 +200,41 @@ class QR {
 		// console.log(alphaToNum.length)
 		// console.log(alphaToNum[82])
 		*/
+	}
+
+	// 形式情報の作成
+	createFormatInfo(){
+		let p = new Polynomial()
+		const mask = 3 // 0~8で固定
+		let f = [], r = []
+		let l = 0
+		switch(this.level){
+			case 0: l = 1; break
+			case 1: l = 0; break
+			case 2: l = 3; break
+			case 3: l = 2; break
+			default: break
+		}
+		// 誤り訂正レベル
+		f.push(l >> 1); f.push(l &  1)
+		// マスクパターン
+		f.push(mask >> 2); f.push((mask >> 1) & 1); f.push(mask & 1)
+		let ftmp = f.concat()
+		// f(x)にx^10を掛ける
+		for(let i = 0; i < 10; ++i) f.push(0)
+
+		// 多項式g(x)の定義
+		let g = [1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1]
+
+		r = p.mod_int(f, g)
+		for(let i = 0; i < ftmp.length; ++i) r[i] = ftmp[i]
+		console.log(r)
+
+		const xor = [1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0]
+		for(let i = 0; i < xor.length; ++i) r[i] = r[i] ^ xor[i]
+
+		console.log(r)
+		this.formatInfo = r
 	}
 
 	// 呼ぶだけでQRコードを生成する
@@ -220,7 +257,8 @@ class QR {
 			// 誤り訂正コードの生成
 			this.createErrorCorrectionCode()
 
-			// 形式情報の配置
+			// 形式情報の生成
+			this.createFormatInfo()
 			
 			// データ語と誤り訂正コードの配置
 	}
