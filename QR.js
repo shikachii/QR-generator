@@ -12,6 +12,8 @@ class QR {
 		this.reserved = []
 		this.errorCorrectionCode = []
 		this.formatInfo = []
+		this.modelNumber = []
+		this.mask = 0
 
 		// QRコードのレベルを設定
 		switch(level){
@@ -205,7 +207,7 @@ class QR {
 	// 形式情報の作成
 	createFormatInfo(){
 		let p = new Polynomial()
-		const mask = 3 // 0~8で固定
+		this.mask = 3 // 0~8で固定
 		let f = [], r = []
 		let l = 0
 		switch(this.level){
@@ -218,7 +220,8 @@ class QR {
 		// 誤り訂正レベル
 		f.push(l >> 1); f.push(l &  1)
 		// マスクパターン
-		f.push(mask >> 2); f.push((mask >> 1) & 1); f.push(mask & 1)
+		f.push(this.mask >> 2); f.push((this.mask >> 1) & 1);
+		f.push(this.mask & 1)
 		let ftmp = f.concat()
 		// f(x)にx^10を掛ける
 		for(let i = 0; i < 10; ++i) f.push(0)
@@ -255,6 +258,39 @@ class QR {
 		this.putPattern(8, this.size-8, 1)
 	}
 
+	createModelNumber(){
+		let p = new Polynomial
+		let v = 7 //this.version 
+		let f = []
+		while(v != 0){
+			let value = v & 1
+			f.unshift(value)
+			v >>= 1
+		}
+		const flen = f.length
+		for(let i = 0; i < 6-flen; ++i) f.unshift(0)
+		for(let i = 0; i < 18-6; ++i) f.push(0)
+		const fx = f.concat()
+		console.log(f)
+
+		// 多項式g(x)の定義
+		let g = [1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1]
+
+		this.modelNumber = p.add(fx, p.mod_int(f, g))
+
+		console.log(this.modelNumber)
+	}
+
+	putModelNumber(){
+		this.modelNumber.reverse()
+		for(let i = 0; i < 6; ++i){
+			for(let j = 0; j < 3; ++j){
+				this.putPattern(i, this.size-11+j, this.modelNumber[i*3+j])
+				this.putPattern(this.size-11+j, i, this.modelNumber[i*3+j])
+			}
+		}
+	}
+
 	// 呼ぶだけでQRコードを生成する
 	generate(){
 			// 位置検出パターンの配置
@@ -281,8 +317,13 @@ class QR {
 			// 形式情報の配置
 			this.putFormatInfo()
 
-			// 型番情報の生成
-			// 型番情報の配置
+			if(this.version >= 0){
+				// 型番情報の生成
+				this.createModelNumber()
+
+				// 型番情報の配置
+				this.putModelNumber()
+			}
 
 			// データ語と誤り訂正コードの配置
 	}
