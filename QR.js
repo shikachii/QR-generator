@@ -237,10 +237,13 @@ class QR {
 
 		// console.log(r)
 		this.formatInfo = r
+
+		console.log(this.formatInfo)
 	}
 
 	// 形式情報の配置
 	putFormatInfo(){
+		this.formatInfo.reverse()
 		for(let i = 0; i < this.formatInfo.length; ++i){
 			if(i < 8){
 				// 右上の横部分の配置
