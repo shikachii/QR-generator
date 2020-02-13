@@ -228,13 +228,31 @@ class QR {
 
 		r = p.mod_int(f, g)
 		for(let i = 0; i < ftmp.length; ++i) r[i] = ftmp[i]
-		console.log(r)
 
 		const xor = [1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0]
 		for(let i = 0; i < xor.length; ++i) r[i] = r[i] ^ xor[i]
 
-		console.log(r)
+		// console.log(r)
 		this.formatInfo = r
+	}
+
+	// 形式情報の配置
+	putFormatInfo(){
+		for(let i = 0; i < this.formatInfo.length; ++i){
+			if(i < 8){
+				// 右上の横部分の配置
+				this.putPattern(this.size-i-1, 8, this.formatInfo[i])
+				// 左上の縦部分の配置
+				this.putPattern(8, ((this.reserved[8][i]) ? i+1 : i), this.formatInfo[i])
+			}else{
+				// 左下の縦部分の配置
+				this.putPattern(8, this.size+i-this.formatInfo.length, this.formatInfo[i])
+				// 左上の横部分の配置
+				this.putPattern((this.reserved[7-(i-8)][8] ? 7-(i-8)-1: 7-(i-8)), 8, this.formatInfo[i])
+			}
+		}
+		// 暗モジュールの設置
+		this.putPattern(8, this.size-8, 1)
 	}
 
 	// 呼ぶだけでQRコードを生成する
@@ -260,6 +278,12 @@ class QR {
 			// 形式情報の生成
 			this.createFormatInfo()
 			
+			// 形式情報の配置
+			this.putFormatInfo()
+
+			// 型番情報の生成
+			// 型番情報の配置
+
 			// データ語と誤り訂正コードの配置
 	}
 		

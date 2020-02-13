@@ -77,24 +77,25 @@ class Polynomial {
 			if(fx[i] === 1) { fdigit = fx.length - i; break }
 		for(let i = 0; i < gx.length; ++i)
 			if(gx[i] === 1) { gdigit = gx.length - i; break }
-		
-		
+			
 		while(1){
-			console.log("fx: " + fdigit + ", gx: " + gdigit)
+			// console.log("fx: " + fdigit + ", gx: " + gdigit)
 			// fxとgxの桁調整
 			let gxtmp = gx.concat()
 			for(let i = 0; i < fdigit-gdigit; ++i) gxtmp.push(0)
-			// for(let i = 0; i < gdigit-fdigit; ++i) fx.push(0)
 
 			let fbase = fx.length - fdigit // fxの最上位桁の場所
+			// 除算を行う
 			for(let i = 0; i < gxtmp.length; ++i){
 				fx[i+fbase] = fx[i+fbase] ^ gxtmp[i]
 			}
 
+			// fxの桁を再計算
 			for(let i = 0; i < fx.length; ++i)
 				if(fx[i] === 1) { fdigit = fx.length - i; break }
 
-			if(fdigit <= 10) break
+			// gxより桁数が少なければそれが余り
+			if(fdigit < gx.length) break
 		}
 
 		return fx
