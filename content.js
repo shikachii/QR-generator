@@ -42,6 +42,7 @@ chrome.extension.onRequest.addListener(() => {
 	// 描画するdiv要素の生成
 	let parentdiv = document.createElement("div")
 	parentdiv.setAttribute("class", "qr")
+	parentdiv.setAttribute("style", "margin: 80px;")
 	document.body.appendChild(parentdiv)
 
 	// parentdivの子としてDOMを追加
