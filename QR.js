@@ -14,6 +14,7 @@ class QR {
 		this.formatInfo = []
 		this.modelNumber = []
 		this.mask = 0
+		this.datazone = []
 
 		// QRコードのレベルを設定
 		switch(level){
@@ -29,24 +30,27 @@ class QR {
 								break
 		}
 
+		console.log(this.length)
 		for(let i = 0; i < verarr.length; ++i){
 			if(this.level === -1) break
 			if(this.length <= verarr[i][this.level]){
-				this.version = i+1; break
+				this.version = i; break
 			}
 			// console.log(this.length + " " + verarr[i][this.level])
 		}
 
 		// QRコードの縦横のピクセル数
-		this.size = 21 + (this.version-1) * 4
+		this.size = 21 + (this.version) * 4
 
 		// QRコード領域と予約領域を確保
 		this.qr = new Array(this.size)
 		this.reserved = new Array(this.size)
+		this.datazone = new Array(this.size)
 
 		for(let i = 0; i < this.size; ++i){
 			this.qr[i] = new Array(this.size).fill(0)
 			this.reserved[i] = new Array(this.size).fill(false)
+			this.datazone[i] = new Array(this.size).fill(false)
 		}
 
 		// QRコードの生成
@@ -54,7 +58,7 @@ class QR {
 	}
 
 	putAble(x, y){
-		if(0 <= x && x < this.size && 0 <= y && y < this.size){
+		if((0 <= x && x < this.size) && (0 <= y && y < this.size)){
 			if(this.reserved[x][y] != true) return true
 			else return false
 		}else return false
@@ -94,8 +98,8 @@ class QR {
 	}
 
 	putAlignmentPattern(){
-		const v = this.version-1
-		console.log(alignarr[v].length)
+		const v = this.version
+		// console.log(alignarr[v].length)
 		for(let i = 0; i < alignarr[v].length; ++i){
 			for(let j = 0; j < alignarr[v].length; ++j){
 				if(i == 0 && j == 0) continue;
@@ -157,12 +161,13 @@ class QR {
 		if(num != 0) this.datacode.push(num)
 
 		let tmp = 0
-		while(this.datacode.length < datacodeSumArr[this.version]){
+		while(this.datacode.length < datacodeSumArr[this.version][this.level]){
 			if(tmp % 2 === 0) this.datacode.push(236)
 			else this.datacode.push(17)
 			tmp++
 		}
 		console.log(this.datacode)
+		console.log(datacodeSumArr[this.version][this.level])
 
 		// データコード分割
 		/*
@@ -327,7 +332,6 @@ class QR {
 		
 		// データコードのバイト化
 		for(let i = 0; i < maxd; ++i){
-				let tmp = []
 			for(let j = 0; j < d.length; ++j){
 				if(d[j].length <= i) continue
 				let byted = []
@@ -337,10 +341,11 @@ class QR {
 					byted.unshift(origind & 1)
 					origind >>= 1
 				}
-				tmp.push(byted)
+				// console.log(byted)
 				for(let k = 0; k < 8; ++k) all.push(byted[k])
 			}
 		}
+		console.log("d-all:" + all.length)
 
 		for(let i = 0; i < maxe; ++i){
 			for(let j = 0; j < e.length; ++j){
@@ -351,21 +356,27 @@ class QR {
 						bytee.unshift(origine & 1)
 						origine >>= 1
 					}
-					console.log(bytee)
+					// console.log(bytee)
 					for(let k = 0; k < 8; ++k) all.push(bytee[k])
 			}
 		}
+		console.log("e-all:" + all.length)
 		// console.log(all)
 
 		let itr = 0
+		let block = 3
 		for(let i = s-1; i >= 0; i-=2){
+			if(i === 6) {i = 5}
 			for(let j = (now===0)?s-1:0; ; j+=dir[now]){
 				for(let k = 0; k < 2; ++k){
 					if(itr > all.length-1) break
 					if(this.putAble(i-k, j)){
-						this.putPattern(i-k, j, all[itr])
+						// if(i === s-1) console.log("x:"+(i-k)+",y:"+j+",b:"+block)
+						this.putPattern((i-k), j, all[itr])
 						// console.log(all[itr])
 						itr++
+						this.datazone[i-k][j] = true
+						if(((itr)%8) === 0) { block++;block=(block%3)+3; }
 					}
 				}
 				if(now===0){ if(j <= 0) break }
@@ -376,6 +387,43 @@ class QR {
 		console.log("itr:" + itr + ", all:" + all.length)
 
 	}
+
+	setMask(){
+		for(let i = 0; i < this.size; ++i){
+			for(let j = 0; j < this.size; ++j){
+				if(!this.datazone[i][j]) continue
+				// 条件を満たす箇所のパターンを入れ替え
+				switch(this.mask){
+					case 0:
+						if((i+j) % 2 === 0) this.qr[i][j] ^= 1
+						break
+					case 1:
+						if(j % 2 === 0) this.qr[i][j] ^= 1
+						break
+					case 2:
+						if(i % 3 === 0) this.qr[i][j] ^= 1
+						break
+					case 3:
+						if((i + j) % 3 === 0) this.qr[i][j] ^= 1
+						break
+					case 4:
+						if(((j/2)+(i/3)) % 2 === 0) this.qr[i][j] ^= 1
+						break
+					case 5:
+						if(((i*j) % 2 + (i*j) % 3) === 0) this.qr[i][j] ^= 1
+						break
+					case 6:
+						if(((i*j)%2 + (i*j)%3) % 2 === 0) this.qr[i][j] ^= 1
+						break
+					case 7:
+						if(((i+j)%2+(i*j)%3)%2 === 0) this.qr[i][j] ^= 1
+						break
+				}
+			}
+		}
+		console.log(this.version + " " + this.size)
+	}
+
 
 	// 呼ぶだけでQRコードを生成する
 	generate(){
@@ -414,6 +462,9 @@ class QR {
 
 			// データ語と誤り訂正コードの配置
 			this.putCode()
+
+			// マスクの対応
+			this.setMask()
 	}
 		
 }
