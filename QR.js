@@ -53,13 +53,26 @@ class QR {
 		this.generate()
 	}
 
+	putAble(x, y){
+		if(0 <= x && x < this.size && 0 <= y && y < this.size){
+			if(this.reserved[x][y] != true) return true
+			else return false
+		}else return false
+	}
+
 	putPattern(x, y, p){
+		if(this.putAble(x, y)){
+			this.qr[x][y] = p;
+			this.reserved[x][y] = true
+		}
+		/*
 		if(0 <= x && x < this.size && 0 <= y && y < this.size){
 			if(this.reserved[x][y] != true){
 				this.qr[x][y] = p;
 				this.reserved[x][y] = true
 			}
 		}
+		*/
 	}
 
 	putFinderPattern(offx, offy){
@@ -170,7 +183,7 @@ class QR {
 
 	// 誤り訂正コードの生成
 	createErrorCorrectionCode(){
-		const ecc = errorCorrectionCharacteristic[this.version][2]
+		const ecc = errorCorrectionCharacteristic[this.version][this.level]
 		let newdatacode = []
 		let base = 0
 		for(let ec of ecc){
@@ -187,6 +200,7 @@ class QR {
 			}
 		}
 		console.log(this.errorCorrectionCode)
+		this.datacode = newdatacode
 		/*
 		let g = generatorPolynomial.get(18)
 
@@ -263,7 +277,7 @@ class QR {
 
 	createModelNumber(){
 		let p = new Polynomial
-		let v = 7 //this.version 
+		let v = this.version 
 		let f = []
 		while(v != 0){
 			let value = v & 1
@@ -292,6 +306,75 @@ class QR {
 				this.putPattern(this.size-11+j, i, this.modelNumber[i*3+j])
 			}
 		}
+	}
+
+	putCode(){
+		const s = this.size
+		const d = this.datacode
+		const e = this.errorCorrectionCode
+		const dir = [-1, 1] // [0]: 上, [1]: 下
+		let now = 0 // 0, 1
+		let maxd = 0, maxe = 0
+		let all = []
+
+		console.log(d)
+		console.log(e)
+
+		for(let i = 0; i < d.length; ++i)
+			maxd = (d[i].length > maxd) ? d[i].length : maxd
+		for(let i = 0; i < e.length; ++i)
+			maxe = (e[i].length > maxe) ? e[i].length : maxe
+		
+		// データコードのバイト化
+		for(let i = 0; i < maxd; ++i){
+				let tmp = []
+			for(let j = 0; j < d.length; ++j){
+				if(d[j].length <= i) continue
+				let byted = []
+				let origind = d[j][i]
+				// 各要素のビット配列を求める
+				for(let k = 0; k < 8; ++k){
+					byted.unshift(origind & 1)
+					origind >>= 1
+				}
+				tmp.push(byted)
+				for(let k = 0; k < 8; ++k) all.push(byted[k])
+			}
+		}
+
+		for(let i = 0; i < maxe; ++i){
+			for(let j = 0; j < e.length; ++j){
+				if(e[j].length <= i) continue
+					let bytee = []
+					let origine = e[j][i]
+					for(let k = 0; k < 8; ++k){
+						bytee.unshift(origine & 1)
+						origine >>= 1
+					}
+					console.log(bytee)
+					for(let k = 0; k < 8; ++k) all.push(bytee[k])
+			}
+		}
+		// console.log(all)
+
+		let itr = 0
+		for(let i = s-1; i >= 0; i-=2){
+			for(let j = (now===0)?s-1:0; ; j+=dir[now]){
+				for(let k = 0; k < 2; ++k){
+					if(itr > all.length-1) break
+					if(this.putAble(i-k, j)){
+						this.putPattern(i-k, j, all[itr])
+						// console.log(all[itr])
+						itr++
+					}
+				}
+				if(now===0){ if(j <= 0) break }
+				else { if(j >= s-1) break }
+			}
+			now ^= 1 // 0, 1 の逆転
+		}
+		console.log("itr:" + itr + ", all:" + all.length)
+
 	}
 
 	// 呼ぶだけでQRコードを生成する
@@ -330,6 +413,7 @@ class QR {
 			}
 
 			// データ語と誤り訂正コードの配置
+			this.putCode()
 	}
 		
 }
