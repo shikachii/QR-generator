@@ -133,7 +133,7 @@ class QR {
 		originDatacode.push(4);
 
 		// 文字数指定示
-		if(1 <= this.version && this.version <= 9){
+		if(0 <= this.version && this.version <= 8){
 			originDatacode.push(this.length)
 		}else{
 			// バージョン9以上なら16ビットの数値(8ビットずつにして格納)
@@ -189,6 +189,7 @@ class QR {
 	// 誤り訂正コードの生成
 	createErrorCorrectionCode(){
 		const ecc = errorCorrectionCharacteristic[this.version][this.level]
+		console.log(ecc)
 		let newdatacode = []
 		let base = 0
 		for(let ec of ecc){
@@ -197,6 +198,12 @@ class QR {
 				let f = this.datacode.slice(base, base+ec[2])
 				newdatacode.push(f)
 				let g = generatorPolynomial.get(ec[1]-ec[2])
+				console.log(f)
+				let tmp = []
+				for(let j of g){
+					tmp.push(alphaToNum[j])
+				}
+				console.log(tmp)
 
 				const r = p.mod(f, g)
 				this.errorCorrectionCode.push(r)
@@ -226,7 +233,7 @@ class QR {
 	// 形式情報の作成
 	createFormatInfo(){
 		let p = new Polynomial()
-		this.mask = 3 // 0~8で固定
+		this.mask = 2 // 0~7で固定
 		let f = [], r = []
 		let l = 0
 		switch(this.level){
@@ -248,8 +255,11 @@ class QR {
 		// 多項式g(x)の定義
 		let g = [1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1]
 
+		console.log(f)
+		console.log(g)
 		r = p.mod_int(f, g)
 		for(let i = 0; i < ftmp.length; ++i) r[i] = ftmp[i]
+		console.log(r)
 
 		const xor = [1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0]
 		for(let i = 0; i < xor.length; ++i) r[i] = r[i] ^ xor[i]
@@ -329,6 +339,7 @@ class QR {
 			maxd = (d[i].length > maxd) ? d[i].length : maxd
 		for(let i = 0; i < e.length; ++i)
 			maxe = (e[i].length > maxe) ? e[i].length : maxe
+		// maxe = 0
 		
 		// データコードのバイト化
 		for(let i = 0; i < maxd; ++i){
@@ -407,7 +418,7 @@ class QR {
 						if((i + j) % 3 === 0) this.qr[i][j] ^= 1
 						break
 					case 4:
-						if(((j/2)+(i/3)) % 2 === 0) this.qr[i][j] ^= 1
+						if((Math.floor(j/2)+Math.floor(i/3)) % 2 === 0) this.qr[i][j] ^= 1
 						break
 					case 5:
 						if(((i*j) % 2 + (i*j) % 3) === 0) this.qr[i][j] ^= 1
