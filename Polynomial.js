@@ -63,7 +63,7 @@ class Polynomial {
 			let zeroflag = true
 			for(let f of fxtmp){
 				if(f === 0 && zeroflag) {
-					if(++cnt === gx.length*2-1) { break }
+					// if(++cnt === gx.length*2-1) { break }
 				}else{
 					zeroflag = false
 					tmp.push(f)

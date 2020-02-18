@@ -25,8 +25,8 @@ chrome.extension.onRequest.addListener(() => {
 	const url = window.location.href
 	const qr = new QR(
 			//"abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
-			//url
-			"abcde"
+			url
+			//"abcde"
 			//"1234567890abcdefghijklmnopqrstuvwxyz"
 			, "M")
 	
