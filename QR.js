@@ -64,6 +64,13 @@ class QR {
 		}else return false
 	}
 
+	putAbleQR(r, x, y){
+		if((0 <= x && x < this.size) && (0 <= y && y < this.size)){
+			if(r[x][y] != true) return true
+			else return false
+		}else return false
+	}
+
 	putPattern(x, y, p){
 		if(this.putAble(x, y)){
 			this.qr[x][y] = p;
@@ -77,6 +84,13 @@ class QR {
 			}
 		}
 		*/
+	}
+
+	putPatternQR(qr, r, x, y, p){
+		if(this.putAbleQR(r, x, y)){
+			qr[x][y] = p;
+			r[x][y] = true
+		}
 	}
 
 	putFinderPattern(offx, offy){
@@ -232,6 +246,8 @@ class QR {
 
 	// 形式情報の作成
 	createFormatInfo(){
+		return this.createFormatInfoQR(this.qr, this.mask)
+		/*
 		let p = new Polynomial()
 		this.mask = 2 // 0~7で固定
 		let f = [], r = []
@@ -268,10 +284,48 @@ class QR {
 		this.formatInfo = r
 
 		console.log(this.formatInfo)
+		*/
+	}
+
+	createFormatInfoQR(qr, mask){
+		let p = new Polynomial()
+		// mask = 1 // 0~7で固定
+		let f = [], r = []
+		let l = 0
+		switch(this.level){
+			case 0: l = 1; break
+			case 1: l = 0; break
+			case 2: l = 3; break
+			case 3: l = 2; break
+			default: break
+		}
+		// 誤り訂正レベル
+		f.push(l >> 1); f.push(l &  1)
+		// マスクパターン
+		f.push(mask >> 2); f.push((mask >> 1) & 1);
+		f.push(mask & 1)
+		let ftmp = f.concat()
+		// f(x)にx^10を掛ける
+		for(let i = 0; i < 10; ++i) f.push(0)
+
+		// 多項式g(x)の定義
+		let g = [1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1]
+
+		r = p.mod_int(f, g)
+		for(let i = 0; i < ftmp.length; ++i) r[i] = ftmp[i]
+		// console.log(r)
+
+		const xor = [1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0]
+		for(let i = 0; i < xor.length; ++i) r[i] = r[i] ^ xor[i]
+
+		console.log(r)
+		return r
 	}
 
 	// 形式情報の配置
 	putFormatInfo(){
+		this.putFormatInfoQR(this.qr, this.mask, this.formatInfo, this.reserved)
+		/*
 		this.formatInfo.reverse()
 		for(let i = 0; i < this.formatInfo.length; ++i){
 			if(i < 8){
@@ -288,6 +342,27 @@ class QR {
 		}
 		// 暗モジュールの設置
 		this.putPattern(8, this.size-8, 1)
+		*/
+	}
+
+	// 形式情報の配置
+	putFormatInfoQR(qr, mask, r, reserved){
+		const fi = r.reverse() // FormatInfo
+		for(let i = 0; i < fi.length; ++i){
+			if(i < 8){
+				// 右上の横部分の配置
+				this.putPatternQR(qr, reserved, this.size-i-1, 8, fi[i])
+				// 左上の縦部分の配置
+				this.putPatternQR(qr, reserved, 8, ((reserved[8][i]) ? i+1 : i), fi[i])
+			}else{
+				// 左下の縦部分の配置
+				this.putPatternQR(qr, reserved, 8, this.size+i-fi.length, fi[i])
+				// 左上の横部分の配置
+				this.putPatternQR(qr, reserved,  (reserved[7-(i-8)][8] ? 7-(i-8)-1: 7-(i-8)), 8, fi[i])
+			}
+		}
+		// 暗モジュールの設置
+		this.putPatternQR(qr, reserved, 8, this.size-8, 1)
 	}
 
 	createModelNumber(){
@@ -323,10 +398,83 @@ class QR {
 		}
 	}
 
+	putCodeQR(qr, r, d, e, dz){
+		const s = this.size
+		const dir = [-1, 1] // [0]: 上, [1]: 下
+		let now = 0 // 0, 1
+		let maxd = 0, maxe = 0
+		let all = []
+
+		for(let i = 0; i < d.length; ++i)
+			maxd = (d[i].length > maxd) ? d[i].length : maxd
+		for(let i = 0; i < e.length; ++i)
+			maxe = (e[i].length > maxe) ? e[i].length : maxe
+		// maxe = 0
+		
+		// データコードのバイト化
+		for(let i = 0; i < maxd; ++i){
+			for(let j = 0; j < d.length; ++j){
+				if(d[j].length <= i) continue
+				let byted = []
+				let origind = d[j][i]
+				// 各要素のビット配列を求める
+				for(let k = 0; k < 8; ++k){
+					byted.unshift(origind & 1)
+					origind >>= 1
+				}
+				// console.log(byted)
+				for(let k = 0; k < 8; ++k) all.push(byted[k])
+			}
+		}
+		console.log("d-all:" + all.length)
+
+		for(let i = 0; i < maxe; ++i){
+			for(let j = 0; j < e.length; ++j){
+				if(e[j].length <= i) continue
+					let bytee = []
+					let origine = e[j][i]
+					for(let k = 0; k < 8; ++k){
+						bytee.unshift(origine & 1)
+						origine >>= 1
+					}
+					// console.log(bytee)
+					for(let k = 0; k < 8; ++k) all.push(bytee[k])
+			}
+		}
+		console.log("e-all:" + all.length)
+		// console.log(all)
+
+		let itr = 0
+		let block = 3 // Debug用変数、8bitごとにデータゾーンをぬりえ
+		for(let i = s-1; i >= 0; i-=2){
+			if(i === 6) {i = 5}
+			for(let j = (now===0)?s-1:0; ; j+=dir[now]){
+				for(let k = 0; k < 2; ++k){
+					if(itr > all.length-1) break
+					if(this.putAbleQR(r, i-k, j)){
+						// if(i === s-1) console.log("x:"+(i-k)+",y:"+j+",b:"+block)
+						this.putPatternQR(qr, r, (i-k), j, all[itr])
+						// console.log(all[itr])
+						itr++
+						dz[i-k][j] = true
+						if(((itr)%8) === 0) { block++;block=(block%3)+3; }
+					}
+				}
+				if(now===0){ if(j <= 0) break }
+				else { if(j >= s-1) break }
+			}
+			now ^= 1 // 0, 1 の逆転
+		}
+		// console.log("itr:" + itr + ", all:" + all.length)
+
+	}
+
 	putCode(){
 		const s = this.size
 		const d = this.datacode
 		const e = this.errorCorrectionCode
+		this.putCodeQR(this.qr, this.reserved, d, e, this.datazone)
+		/*
 		const dir = [-1, 1] // [0]: 上, [1]: 下
 		let now = 0 // 0, 1
 		let maxd = 0, maxe = 0
@@ -396,7 +544,144 @@ class QR {
 			now ^= 1 // 0, 1 の逆転
 		}
 		console.log("itr:" + itr + ", all:" + all.length)
+		*/
 
+	}
+
+	evalMask(qr, mask){
+		let e = 0 // eval num
+		const N1 = 3, N2 = 3, N3 = 40, N4 = 10
+		
+		let tmp = 0
+		// N1, 同色の行または列の隣接モジュール
+		for(let i = 0; i < this.size; ++i){
+			let now = qr[i][0]
+			let cnt = 1
+			for(let j = 0; j < this.size; ++j){
+				if(now === qr[i][j]) cnt++
+				else {
+					now = qr[i][j]
+					if(cnt >= 5) {
+						// console.log(e + " " + (3+cnt-5) + " " + i + " " + j)
+						e += (N1 + cnt - 5)
+						// console.log(e)
+					}
+					cnt = 1
+				}
+			}
+			if(cnt >= 5){
+				e += (N1 + cnt - 5)
+			}
+		}
+
+		for(let i = 0; i < this.size; ++i){
+			let now = qr[0][i]
+			let cnt = 0
+			for(let j = 0; j < this.size; ++j){
+				if(now === qr[j][i]) cnt++
+				else {
+					now = qr[j][i]
+					if(cnt >= 5) { 
+						e += (N1 + cnt - 5)
+						// tmp ++
+						// console.log("i:"+i + ", cnt:" +cnt)
+					}
+					cnt = 1
+				}
+			}
+			if(cnt >= 5){
+				e += (N1 + cnt - 5)
+				// tmp++
+				// console.log("i:"+i + ", cnt:" +cnt)
+			}
+		}
+		// console.log("cnt:" + tmp)
+
+		let asdf = 0
+		// N2, 同色のモジュールブロック
+		for(let i = 0; i < this.size-1; ++i){
+			for(let j = 0; j < this.size-1; ++j){
+				// console.log(qr[i][j]+" "+qr[i+1][j]+" "+qr[i][j+1]+" "+qr[i+1][j+1])
+				if(qr[i][j] === qr[i+1][j] &&
+					 qr[i][j+1] === qr[i+1][j+1] &&
+					 qr[i][j] === qr[i+1][j+1]) {
+					tmp++	
+					asdf += N2
+					e += N2
+					// console.log(e)
+				}
+			}
+		}
+		console.log(asdf)
+
+		const compare = (src, dst) => {
+			for(let i = 0; i < src.length; ++i){
+				if(src[i] !== dst[i]) return false
+			}
+			return true
+		}
+
+		// N3, 行と列における1:1:3:1:1の暗明暗明暗のパターンの前後に比率4の明パターン
+		const alt = [1, 0, 1, 1, 1, 0, 1] // 交互パターン
+		const light = [0, 0, 0, 0] // 明パターン
+		let pattern = []
+		pattern.push(alt.concat(light))
+		pattern.push(light.concat(alt))
+		console.log(pattern.length)
+		// パターンの順番
+		for(let p = 0; p < 2; ++p){
+			const s = pattern[p].length
+			for(let i = 0; i < this.size; ++i){ // 行
+				for(let j = 0; j < this.size-s; ++j){ // 列
+					let flag = true // patternとqr[i][j]が一致
+					for(let k = 0; k < s; ++k){
+						if(qr[i][j+k] !== pattern[p][k]) {
+							flag = false
+							break
+						}
+					}
+					if(flag) { e += N3; console.log("3000000000000") }
+				}
+			}
+		}
+
+		console.log(qr[17])
+
+		for(let p = 0; p < pattern.size; ++p){
+			for(let i = 0; i < this.size; ++i){ // 行
+				for(let j = 0; j < this.size-pattern[p].size; ++j){ // 列
+					let flag = true // patternとqr[i][j]が一致
+					for(let k = 0; k < pattern[p].size; ++k){
+						if(qr[j+k][i] !== pattern[p][k]) {
+							flag = false
+							break
+						}
+					}
+					if(flag) { e += N3; console.log("3") }
+				}
+			}
+		}
+
+		// N4, 全体に対する暗モジュールの占める割合
+		const size = (this.size+1)*(this.size+1)
+		// console.log("size:" + size)
+		let darkmodule = 0
+		for(let i = 0; i < this.size; ++i){
+			for(let j = 0; j < this.size; ++j){
+				if(qr[i][j] === 1) darkmodule++
+			}
+		}
+		// console.log("par:" + darkmodule/size)
+		// console.log("dark:" + darkmodule)
+		const per = Math.abs(darkmodule / size - 0.5) * 100
+		if(per >= 5.0){
+			const k = per/5.0
+			e += N4 * Math.floor(k)
+			console.log(N4 *Math.floor(k))
+		}
+
+
+		return e
 	}
 
 	setMask(){
@@ -435,6 +720,42 @@ class QR {
 		console.log(this.version + " " + this.size)
 	}
 
+	setMaskQR(qr, dz, mask){
+		for(let i = 0; i < this.size; ++i){
+			for(let j = 0; j < this.size; ++j){
+				if(!dz[i][j]) continue
+				// 条件を満たす箇所のパターンを入れ替え
+				switch(mask){
+					case 0:
+						if((i+j) % 2 === 0) qr[i][j] ^= 1
+						break
+					case 1:
+						if(j % 2 === 0) qr[i][j] ^= 1
+						break
+					case 2:
+						if(i % 3 === 0) qr[i][j] ^= 1
+						break
+					case 3:
+						if((i + j) % 3 === 0) qr[i][j] ^= 1
+						break
+					case 4:
+						if((Math.floor(j/2)+Math.floor(i/3)) % 2 === 0) qr[i][j] ^= 1
+						break
+					case 5:
+						if(((i*j) % 2 + (i*j) % 3) === 0) qr[i][j] ^= 1
+						break
+					case 6:
+						if(((i*j)%2 + (i*j)%3) % 2 === 0) qr[i][j] ^= 1
+						break
+					case 7:
+						if(((i+j)%2+(i*j)%3)%2 === 0) qr[i][j] ^= 1
+						break
+				}
+			}
+		}
+		// console.log(this.version + " " + this.size)
+	}
+
 
 	// 呼ぶだけでQRコードを生成する
 	generate(){
@@ -456,9 +777,44 @@ class QR {
 			// 誤り訂正コードの生成
 			this.createErrorCorrectionCode()
 
-			// 形式情報の生成
-			this.createFormatInfo()
+			let min = 1000000000
+			for(let i = 0; i < 8; ++i){
+				// Array.concat()のようなshallow copy(1次元しかコピーできない)ではなくJSONに変換→Arrayに変換のようなdeep copyを行うと完全な値渡しができる
+				const qr_tmp = JSON.parse(JSON.stringify(this.qr))
+				const r_tmp = JSON.parse(JSON.stringify(this.reserved))
+				const d_tmp = JSON.parse(JSON.stringify(this.datacode))
+				const e_tmp = JSON.parse(JSON.stringify(this.errorCorrectionCode))
+				const dz_tmp = JSON.parse(JSON.stringify(this.datazone))
+				
+				// 形式情報の生成
+				const r = this.createFormatInfoQR(qr_tmp, i)
+
+				// 形式情報の配置
+				this.putFormatInfoQR(qr_tmp, i, r, r_tmp)	
+
+				// データ語と誤り訂正コードの配置
+				this.putCodeQR(qr_tmp, r_tmp, d_tmp, e_tmp, dz_tmp)
+
+				// マスクの対応
+				this.setMaskQR(qr_tmp, dz_tmp, i)
+
+				// マスクの評価を行う
+				const m = this.evalMask(qr_tmp, i)
+				console.log(i + ":" + m)
+
+				// 評価値mが1番少なかったときのiをマスクとする
+				if(m < min) {
+					min = m
+					this.mask = i
+				}
+			}
+			console.log(this.mask)
+			// this.mask = 3
 			
+			// 形式情報の計算
+			this.formatInfo = this.createFormatInfo()
+			console.log(this.formatInfo)
+
 			// 形式情報の配置
 			this.putFormatInfo()
 
