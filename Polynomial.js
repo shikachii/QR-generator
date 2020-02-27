@@ -55,14 +55,14 @@ class Polynomial {
 				// console.log(gxtmp[i])
 				// if(gxtmp[i] === -1) continue
 			}
-			console.log(fxtmp)
-			console.log(gxtmp)
 			fxtmp = this.add(fxtmp, gxtmp)
 
+			// 上部にある0を取り除く
 			let tmp = []
 			let zeroflag = true
 			for(let f of fxtmp){
 				if(f === 0 && zeroflag) {
+					continue
 					// if(++cnt === gx.length*2-1) { break }
 				}else{
 					zeroflag = false
@@ -70,9 +70,10 @@ class Polynomial {
 				}
 			}
 			fxtmp = tmp.concat()
-			console.log(fxtmp)
-			if(this.less_than(fxtmp, gxtmp)) break
-			// if(cnt === gx.length) { return fxtmp }
+			// console.log(fxtmp)
+			// console.log(gxtmp)
+			// fxtmp < gxであればそれが余り
+			if(this.less_than(fxtmp, gx)) break
 
 			gxtmp = gx.concat()
 		}
