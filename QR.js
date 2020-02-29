@@ -366,6 +366,8 @@ class QR {
 	}
 
 	createModelNumber(){
+		this.modelNumber = this.createModelNumberQR()
+		/*
 		let p = new Polynomial
 		let v = this.version 
 		let f = []
@@ -386,14 +388,49 @@ class QR {
 		this.modelNumber = p.add(fx, p.mod_int(f, g))
 
 		console.log(this.modelNumber)
+		*/
+	}
+
+	createModelNumberQR(){
+		let p = new Polynomial
+		let v = this.version 
+		let f = []
+		while(v != 0){
+			let value = v & 1
+			f.unshift(value)
+			v >>= 1
+		}
+		const flen = f.length
+		for(let i = 0; i < 6-flen; ++i) f.unshift(0)
+		for(let i = 0; i < 18-6; ++i) f.push(0)
+		const fx = f.concat()
+		console.log(f)
+
+		// 多項式g(x)の定義
+		let g = [1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1]
+
+		return p.add(fx, p.mod_int(f, g))
 	}
 
 	putModelNumber(){
+		this.putModelNumberQR(this.qr, this.reserved, this.modelNumber)
+		/*
 		this.modelNumber.reverse()
 		for(let i = 0; i < 6; ++i){
 			for(let j = 0; j < 3; ++j){
 				this.putPattern(i, this.size-11+j, this.modelNumber[i*3+j])
 				this.putPattern(this.size-11+j, i, this.modelNumber[i*3+j])
+			}
+		}
+		*/
+	}
+
+	putModelNumberQR(qr, r, mn){
+		mn.reverse()
+		for(let i = 0; i < 6; ++i){
+			for(let j = 0; j < 3; ++j){
+				this.putPatternQR(qr, r, i, this.size-11+j, mn[i*3+j])
+				this.putPatternQR(qr, r, this.size-11+j, i, mn[i*3+j])
 			}
 		}
 	}
@@ -791,6 +828,15 @@ class QR {
 
 				// 形式情報の配置
 				this.putFormatInfoQR(qr_tmp, i, r, r_tmp)	
+
+				// 型番情報はバージョン7以降のみに配置
+				if(this.version >= 7){
+					// 型番情報の生成
+					const mn = this.createModelNumberQR()
+
+					// 型番情報の配置
+					this.putModelNumberQR(qr_tmp, r_tmp, mn)
+				}
 
 				// データ語と誤り訂正コードの配置
 				this.putCodeQR(qr_tmp, r_tmp, d_tmp, e_tmp, dz_tmp)
