@@ -213,11 +213,12 @@ class QR {
 				newdatacode.push(f)
 				let g = generatorPolynomial.get(ec[1]-ec[2])
 				console.log(f)
+				// console.log(g)
 				let tmp = []
 				for(let j of g){
 					tmp.push(alphaToNum[j])
 				}
-				console.log(tmp)
+				console.log(tmp) // alpha->numのg
 
 				const r = p.mod(f, g)
 				this.errorCorrectionCode.push(r)
@@ -318,7 +319,7 @@ class QR {
 		const xor = [1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0]
 		for(let i = 0; i < xor.length; ++i) r[i] = r[i] ^ xor[i]
 
-		console.log(r)
+		// console.log(r)
 		return r
 	}
 
@@ -404,7 +405,7 @@ class QR {
 		for(let i = 0; i < 6-flen; ++i) f.unshift(0)
 		for(let i = 0; i < 18-6; ++i) f.push(0)
 		const fx = f.concat()
-		console.log(f)
+		// console.log(f)
 
 		// 多項式g(x)の定義
 		let g = [1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1]
@@ -463,7 +464,7 @@ class QR {
 				for(let k = 0; k < 8; ++k) all.push(byted[k])
 			}
 		}
-		console.log("d-all:" + all.length)
+		// console.log("d-all:" + all.length)
 
 		for(let i = 0; i < maxe; ++i){
 			for(let j = 0; j < e.length; ++j){
@@ -478,7 +479,7 @@ class QR {
 					for(let k = 0; k < 8; ++k) all.push(bytee[k])
 			}
 		}
-		console.log("e-all:" + all.length)
+		// console.log("e-all:" + all.length)
 		// console.log(all)
 
 		let itr = 0
@@ -487,10 +488,12 @@ class QR {
 			if(i === 6) {i = 5}
 			for(let j = (now===0)?s-1:0; ; j+=dir[now]){
 				for(let k = 0; k < 2; ++k){
-					if(itr > all.length-1) break
+					let pc = (itr > all.length-1) ? 0 : all[itr]
+					// pc = block
+					// if(itr > all.length-1) { pc = 0 }
 					if(this.putAbleQR(r, i-k, j)){
 						// if(i === s-1) console.log("x:"+(i-k)+",y:"+j+",b:"+block)
-						this.putPatternQR(qr, r, (i-k), j, all[itr])
+						this.putPatternQR(qr, r, (i-k), j, pc)
 						// console.log(all[itr])
 						itr++
 						dz[i-k][j] = true
@@ -634,7 +637,6 @@ class QR {
 		}
 		// console.log("cnt:" + tmp)
 
-		let asdf = 0
 		// N2, 同色のモジュールブロック
 		for(let i = 0; i < this.size-1; ++i){
 			for(let j = 0; j < this.size-1; ++j){
@@ -643,13 +645,11 @@ class QR {
 					 qr[i][j+1] === qr[i+1][j+1] &&
 					 qr[i][j] === qr[i+1][j+1]) {
 					tmp++	
-					asdf += N2
 					e += N2
 					// console.log(e)
 				}
 			}
 		}
-		console.log(asdf)
 
 		const compare = (src, dst) => {
 			for(let i = 0; i < src.length; ++i){
@@ -664,7 +664,6 @@ class QR {
 		let pattern = []
 		pattern.push(alt.concat(light))
 		pattern.push(light.concat(alt))
-		console.log(pattern.length)
 		// パターンの順番
 		for(let p = 0; p < 2; ++p){
 			const s = pattern[p].length
@@ -677,12 +676,10 @@ class QR {
 							break
 						}
 					}
-					if(flag) { e += N3; console.log("3000000000000") }
+					if(flag) { e += N3; }
 				}
 			}
 		}
-
-		console.log(qr[17])
 
 		for(let p = 0; p < pattern.size; ++p){
 			for(let i = 0; i < this.size; ++i){ // 行
@@ -694,7 +691,7 @@ class QR {
 							break
 						}
 					}
-					if(flag) { e += N3; console.log("3") }
+					if(flag) { e += N3; }
 				}
 			}
 		}
@@ -855,7 +852,7 @@ class QR {
 				}
 			}
 			console.log(this.mask)
-			// this.mask = 3
+			this.mask = 4
 			
 			// 形式情報の計算
 			this.formatInfo = this.createFormatInfo()
