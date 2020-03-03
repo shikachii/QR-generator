@@ -26,13 +26,15 @@ class Polynomial {
 	mod(fx, gx){
 		let modulo = []
 		let fxtmp = fx.concat() // 新しくfxと同じ配列を作成
-		let gxtmp = []
+		let gxtmp = gx.concat()
 
 		//for(let i = 0; i < gx.length-fx.length; ++i) fxtmp.push(0)
+		/*
 		for(let i = 0; i < gx.length; ++i){
 			gxtmp.push(gx[i])
 			// gxtmp.push(alphaToNum[gx[0]]) // a^nから数値に変換
 		}
+		*/
 		// for(let i in fx) gxtmp.push(0)
 
 		// console.log(alphaToNum[50])
@@ -41,7 +43,8 @@ class Polynomial {
 		}
 
 		let cnt = 0
-		for(let ind = 0; ind < fx.length; ++ind){
+		const leng = fxtmp.length
+		for(let ind = 0; ind < leng; ++ind){
 			//for(let i = 0; i < gx.length-fxtmp.length; ++i) fxtmp.push(0)
 			/*
 			const maxlen = Math.max(fxtmp.length, gx.length)
@@ -73,18 +76,26 @@ class Polynomial {
 			// console.log(fxtmp)
 			// console.log(gxtmp)
 			// fxtmp < gxであればそれが余り
-			if(this.less_than(fxtmp, gx)) break
+			let gxnum = []
+			for(let i = 0; i < gx.length; ++i)
+				gxnum.push(alphaToNum[gx[i]])
+			console.log(fxtmp)
+			console.log(gxnum)
+			console.log("length:"+fxtmp.length+", "+this.less_than(fxtmp, gxnum))
+			if(this.less_than(fxtmp, gxnum)) break
+			console.log("ind:"+ind+",length:"+fx.length)
 
 			gxtmp = gx.concat()
 		}
 
 		// if(fx.length < gx.length) return fx
+		console.log(fxtmp)
 
 		modulo = fxtmp
 		return modulo
 	}
 
-	// fx <= gx でtrue
+	// fx < gx でtrue
 	less_than(fx, gx){
 		let fdigit = 0, gdigit = 0
 		for(let i = 0; i < fx.length; ++i)
@@ -94,10 +105,11 @@ class Polynomial {
 
 		if(fdigit < gdigit) return true
 		else if(fdigit === gdigit){
-			let bool = true
+			let bool = false
 			let fbase = fx.length - fdigit
 			for(let i = 0; i < gx.length; ++i){
-				if(fx[i+fbase] < gx[i]) { bool = false; break }
+				if(fx[i+fbase] > gx[i]) { bool = false; break }
+				else if(fx[i+fbase] < gx[i]){ bool = true; break }
 			}
 			return bool
 		}else return false
