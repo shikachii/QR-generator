@@ -34,7 +34,7 @@ chrome.extension.onRequest.addListener(() => {
 	let canvas = document.createElement("canvas")
 	canvas.setAttribute("width",   WIDTH*qr.size.toString())
 	canvas.setAttribute("height", HEIGHT*qr.size.toString())
-	canvas.setAttribute("style", "margin: 80px;")
+	// canvas.setAttribute("style", "margin: 80px;")
 	let ctx = canvas.getContext("2d")
 
 	// URLを描画するdiv要素(デバッグ用)
@@ -49,6 +49,10 @@ chrome.extension.onRequest.addListener(() => {
 	let parentdiv = document.createElement("div")
 	parentdiv.setAttribute("class", "qr")
 	document.body.appendChild(parentdiv)
+
+	parentdiv.addEventListener("click", function(){
+		document.body.removeChild(parentdiv)
+	}, false)
 
 	// parentdivの子としてDOMを追加
 	parentdiv.appendChild(canvas)
