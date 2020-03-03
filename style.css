@@ -1,0 +1,14 @@
+.qr {
+	background: rgba(0.4, 0.4, 0.4, 0.4);
+	position: fixed;
+	top: 0px;
+	width: 100%;
+	height: 100%;
+	z-index: 999;
+}
+
+canvas {
+	background: #FFF;
+	padding: 20px;
+	margin: 60px;
+}
