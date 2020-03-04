@@ -21,8 +21,8 @@ function reflectPattern(code, ctx){
 	}
 }
 
-chrome.extension.onRequest.addListener(() => {
-	const url = window.location.href
+chrome.runtime.onMessage.addListener((message, sender, callback) => {
+	const url = message.type // window.location.href
 	const qr = new QR(
 			//"abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
 			url
@@ -34,27 +34,39 @@ chrome.extension.onRequest.addListener(() => {
 	let canvas = document.createElement("canvas")
 	canvas.setAttribute("width",   WIDTH*qr.size.toString())
 	canvas.setAttribute("height", HEIGHT*qr.size.toString())
-	// canvas.setAttribute("style", "margin: 80px;")
+	canvas.setAttribute("class", "qr-canvas")
 	let ctx = canvas.getContext("2d")
 
-	// URLを描画するdiv要素(デバッグ用)
+	// タイトルを描画するdiv要素
 	let urldiv = document.createElement("div")
-	urldiv.setAttribute("class", "url")
+	urldiv.setAttribute("class", "qr-url")
 	urldiv.innerHTML = qr.data
+
+	// URLを描画するdiv要素
+	let titlediv = document.createElement("div")
+	titlediv.setAttribute("class", "qr-title")
+	titlediv.innerHTML = "QR-generator"
 
 	// 生成されたQRコードをcontextに反映する
 	reflectPattern(qr, ctx)
 
 	// 描画するdiv要素の生成
 	let parentdiv = document.createElement("div")
-	parentdiv.setAttribute("class", "qr")
+	parentdiv.setAttribute("class", "qr-base")
 	document.body.appendChild(parentdiv)
 
 	parentdiv.addEventListener("click", function(){
 		document.body.removeChild(parentdiv)
 	}, false)
 
-	// parentdivの子としてDOMを追加
-	parentdiv.appendChild(canvas)
-	parentdiv.appendChild(urldiv)
+	let backdiv = document.createElement("div")
+	backdiv.setAttribute("class", "qr-back")
+	
+	// backdivの子としてDOMを追加
+	backdiv.appendChild(titlediv)
+	backdiv.appendChild(canvas)
+	backdiv.appendChild(urldiv)
+
+	// parentdivの子としてbackdivを追加
+	parentdiv.appendChild(backdiv)
 })

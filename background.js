@@ -10,7 +10,9 @@ function genericOnClick(info, tab){
 		url = info.linkUrl;
 	}
 
-	chrome.tabs.sendRequest(tab.id, {})
+	// chrome.tabs.sendRequest(tab.id, {})
+	const message = {type : url}
+	chrome.tabs.sendMessage(tab.id, message, null)
 
 	// alert(url + "\n" + url.length + "<canvas id='cv1' width='360' height='240'></canvas>");
 }
