@@ -21,8 +21,8 @@ function reflectPattern(code, ctx){
 	}
 }
 
-chrome.extension.onRequest.addListener(() => {
-	const url = window.location.href
+chrome.runtime.onMessage.addListener((message, sender, callback) => {
+	const url = message.type // window.location.href
 	const qr = new QR(
 			//"abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
 			url
