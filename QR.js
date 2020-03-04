@@ -852,7 +852,7 @@ class QR {
 				}
 			}
 			console.log(this.mask)
-			this.mask = 4
+			// this.mask = 4
 			
 			// 形式情報の計算
 			this.formatInfo = this.createFormatInfo()
