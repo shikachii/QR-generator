@@ -115,6 +115,18 @@ class Polynomial {
 		}else return false
 	}
 
+	// fx < gx でtrue, 桁がfx >= gxであればfalse(多項式特有)
+	less_than_poly(fx, gx){
+		let fdigit = 0, gdigit = 0
+		for(let i = 0; i < fx.length; ++i)
+			if(fx[i] !== 0) { fdigit = fx.length - i; break }
+		for(let i = 0; i < gx.length; ++i)
+			if(gx[i] !== 0) { gdigit = gx.length - i; break }
+
+		if(fdigit < gdigit) return true
+		else return false
+	}
+
 	mod_int(fx, gx){
 		// fxとgxの桁を調査
 		let fdigit = 0, gdigit = 0
@@ -124,7 +136,7 @@ class Polynomial {
 			if(gx[i] === 1) { gdigit = gx.length - i; break }
 			
 		// そもそも割られる数の方が小さかった場合
-		if(this.less_than(fx, gx)) return fx
+		if(this.less_than_poly(fx, gx)) return fx
 
 		while(1){
 			// console.log("fx: " + fdigit + ", gx: " + gdigit)
@@ -143,7 +155,7 @@ class Polynomial {
 				if(fx[i] === 1) { fdigit = fx.length - i; break }
 
 			// fx <= gxならばそれが余り
-			if(this.less_than(fx, gx)) break
+			if(this.less_than_poly(fx, gx)) break
 		}
 
 		return fx
