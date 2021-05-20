@@ -41,3 +41,6 @@ QR-generatorは今あなたが見ているWebページのQRコードをすぐに
 ありがとうございます！
 お気持ちはありがたいのですが現在QR-generatorは制作を停止し、React+Typescriptで書き直しをしています！
 [QRVisualizer](https://github.com/shikachii/QRVisualizer)をご覧ください！
+
+## ライセンス
+MIT License
