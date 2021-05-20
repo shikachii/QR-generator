@@ -16,7 +16,7 @@ QR-generatorは今あなたが見ているWebページのQRコードをすぐに
 2. Assetsから`QR-generator.crx`をダウンロードします
 ![QR-generator_release](https://user-images.githubusercontent.com/16307592/119022797-f7205600-b9db-11eb-818e-c45167b82a61.png)
 
-3. `chrome://extensions` に移動します
+3. URLバーに`chrome://extensions`を打ち込んで拡張機能ページに移動します
 
 4. 画面右上のデベロッパーモードを有効にして`QR-generator.crx`を画面にドラッグ&ドロップします
 
